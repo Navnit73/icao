@@ -14,8 +14,10 @@ import {
   RotateCcw,
   ShieldCheck,
   UserCheck,
+  ZoomIn,
 } from "lucide-react";
 import PaymentButton, { type PaidOrder } from "@/components/PaymentButton";
+import ImageDialog from "@/components/ImageDialog";
 import { getCountryByCode } from "@/config/countries";
 import type { PassportProcessResult } from "@/lib/passport-api";
 import { PRICING, type PlanType } from "@/lib/config/pricing";
@@ -147,6 +149,7 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
   const [plan, setPlan] = useState<PlanType>("standard");
   const [paid, setPaid] = useState<PaidInfo | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const emailValid = EMAIL_RE.test(email.trim());
@@ -293,6 +296,15 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
 
   return (
     <div className="rounded-3xl bg-gray-100 p-2 text-left">
+      {previewUrl && (
+        <ImageDialog
+          open={zoomOpen}
+          onClose={() => setZoomOpen(false)}
+          src={previewUrl}
+          alt={`ICAO-compliant ${countryName} ${documentType} photo preview, enlarged`}
+          caption={`After · ${dimensions} px · ${countryName} ${documentType}`}
+        />
+      )}
       <div className="rounded-2xl bg-white p-4 sm:p-6">
         {/* Progress */}
         <ol className="mb-5 grid grid-cols-4 gap-1.5 text-[11px] font-medium text-gray-500 sm:text-xs" aria-label="Progress">
@@ -305,7 +317,7 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
         </ol>
 
         {!paid ? (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
             <div>
               <h1 className="mb-3 text-xl font-bold sm:text-2xl">Your ICAO photo preview</h1>
               <div className="grid grid-cols-2 gap-3">
@@ -322,14 +334,25 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
                 )}
                 {previewUrl && (
                   <figure className={`text-center ${originalPreview ? "" : "col-span-2"}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrl}
-                      alt={`ICAO-compliant ${countryName} ${documentType} photo preview`}
-                      className="aspect-[7/9] w-full rounded-xl bg-gray-100 object-contain ring-2 ring-amber-400 select-none"
-                      onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setZoomOpen(true)}
+                      aria-haspopup="dialog"
+                      aria-label={`Enlarge the ICAO ${countryName} ${documentType} photo preview`}
+                      className="group relative block w-full cursor-zoom-in rounded-xl"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={previewUrl}
+                        alt={`ICAO-compliant ${countryName} ${documentType} photo preview`}
+                        className="aspect-[7/9] w-full rounded-xl bg-gray-100 object-contain ring-2 ring-amber-400 transition-[box-shadow] select-none group-hover:ring-4"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                      <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-medium text-white transition-colors group-hover:bg-black">
+                        <ZoomIn className="size-3.5" aria-hidden="true" /> Enlarge
+                      </span>
+                    </button>
                     <figcaption className="mt-1.5 text-xs font-semibold text-amber-700">After · {dimensions} px</figcaption>
                   </figure>
                 )}

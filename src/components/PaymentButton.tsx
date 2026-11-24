@@ -66,6 +66,14 @@ export default function PaymentButton({
 }: PaymentButtonProps) {
   const [toast, setToast] = useState<Toast>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // PayPal's own enable/disable handle, so toggling `disabled` doesn't tear the buttons down
+  const buttonActions = useRef<{ enable: () => Promise<void>; disable: () => Promise<void> } | null>(null);
+  const disabledRef = useRef(disabled);
+
+  useEffect(() => {
+    disabledRef.current = disabled;
+    void (disabled ? buttonActions.current?.disable() : buttonActions.current?.enable());
+  }, [disabled]);
   const expectedValue = (amount / 100).toFixed(2);
 
   useEffect(
@@ -95,11 +103,15 @@ export default function PaymentButton({
         <ScriptStatus />
         <PayPalButtons
           style={{ layout: "vertical", shape: "rect", color: "gold", label: "pay" }}
-          disabled={disabled}
-          forceReRender={[amount, currency, disabled, description]}
+          // Re-render only when the order itself changes; `disabled` is applied via onInit actions.
+          forceReRender={[amount, currency, description]}
+          onInit={(_data, actions) => {
+            buttonActions.current = actions;
+            if (disabledRef.current) void actions.disable();
+          }}
           onClick={(_data, actions) => {
-            // The disabled prop only greys the button out; block the click as well.
-            return disabled ? actions.reject() : actions.resolve();
+            // Belt and braces: block the click as well while disabled.
+            return disabledRef.current ? actions.reject() : actions.resolve();
           }}
           createOrder={(_data, actions) =>
             actions.order.create({

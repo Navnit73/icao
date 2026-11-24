@@ -27,7 +27,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
     <>
       <Navbar priceText={standard.amountFormatted} />
       <main id="main-content" className="flex flex-1 flex-col bg-gray-50 px-4 pt-24 pb-12 sm:px-6 sm:pt-32">
-        <section aria-label="Photo preview" className="mx-auto w-full max-w-5xl">
+        <section aria-label="Photo preview" className="mx-auto w-full max-w-7xl">
           <PricingProvider initialCurrency={currency} country={country}>
             <PhotoPreview resultId={id} priceCountryName={countryDisplayName(country)} />
           </PricingProvider>
