@@ -664,7 +664,8 @@ img {
   }
 }
 
-/* The combobox wrapper draws its own amber focus ring, so skip the outline on the inner input */
-input[role="combobox"]:focus-visible {
+/* Inputs inside a wrapper that draws its own amber focus ring skip the global outline */
+input[role="combobox"]:focus-visible,
+.no-focus-outline:focus-visible {
   outline: none;
 }

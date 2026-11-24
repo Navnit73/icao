@@ -49,10 +49,19 @@ interface StoredResult extends PassportProcessResult {
   timestamp?: number;
 }
 
+type MailStatus = "sending" | "sent" | "failed";
+
 interface PaidInfo extends PaidOrder {
   planType: PlanType;
   paidAt: string;
+  /** Email the customer typed before paying; the photo is sent here. */
+  customerEmail: string;
+  amount: number;
+  currency: string;
+  mailStatus: MailStatus;
 }
+
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const UPLOAD_HREF = "/#make-photo";
 const paidKey = (id: string) => `pixpassport_paid_${id}`;
@@ -138,6 +147,9 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
   const [plan, setPlan] = useState<PlanType>("standard");
   const [paid, setPaid] = useState<PaidInfo | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const emailValid = EMAIL_RE.test(email.trim());
 
   const { currency, standard, expert_edit } = usePricing();
   const activePricing = plan === "expert_edit" ? expert_edit : standard;
@@ -151,7 +163,8 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
 
   useEffect(() => {
     if (paid) window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [paid]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paid?.orderID]);
 
   if (result === undefined) {
     return (
@@ -190,10 +203,54 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
   const originalPreview = result.original_preview || null;
   const fileName = `icao-photo-${result.country_code.toLowerCase()}-${dimensions || "photo"}.jpg`;
 
+  /** Records the order and emails the photo. Safe to call again: the server ignores repeats. */
+  async function recordOrder(info: PaidInfo) {
+    if (!result) return;
+    let next: MailStatus = "failed";
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderID: info.orderID,
+          email: info.customerEmail,
+          plan: info.planType,
+          amount: info.amount,
+          currency: info.currency,
+          resultId: result.result_id,
+          countryCode: result.country_code,
+          countryName,
+          documentType,
+          dimensions,
+          imageUrl: fullImageUrl,
+          payerEmail: info.email || undefined,
+          payerName: info.name || undefined,
+          payerID: info.payerID || undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; emailed?: boolean };
+      next = res.ok && data.ok && data.emailed ? "sent" : "failed";
+    } catch {
+      next = "failed";
+    }
+    const updated = { ...info, mailStatus: next };
+    savePaid(resultId, updated);
+    setPaid(updated);
+  }
+
   function handlePaid(order: PaidOrder) {
-    const info: PaidInfo = { ...order, planType: plan, paidAt: new Date().toISOString() };
+    const info: PaidInfo = {
+      ...order,
+      planType: plan,
+      paidAt: new Date().toISOString(),
+      customerEmail: email.trim().toLowerCase(),
+      amount: activePricing.amountInSubunits,
+      currency,
+      mailStatus: "sending",
+    };
     savePaid(resultId, info);
     setPaid(info);
+    void recordOrder(info);
   }
 
   async function handleDownload() {
@@ -363,14 +420,55 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
                     {activePricing.amountFormatted} <span className="text-xs font-medium text-gray-500">{currency}</span>
                   </span>
                 </p>
+                <div>
+                  <label htmlFor="icao-email" className="mb-1.5 block text-sm font-semibold">
+                    Email to receive your photo
+                  </label>
+                  <div
+                    className={`flex items-center gap-2 rounded-xl bg-gray-100 px-4 ring-inset focus-within:ring-2 focus-within:ring-amber-400 ${
+                      emailTouched && !emailValid ? "ring-2 ring-red-400" : "ring-1 ring-gray-200"
+                    }`}
+                  >
+                    <Mail className="size-4 shrink-0 text-gray-400" aria-hidden="true" />
+                    <input
+                      id="icao-email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className="no-focus-outline w-full bg-transparent py-3 text-base outline-none sm:text-sm"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => setEmailTouched(true)}
+                      aria-invalid={emailTouched && !emailValid}
+                      aria-describedby="icao-email-help"
+                      required
+                    />
+                  </div>
+                  <p
+                    id="icao-email-help"
+                    className={`mt-1.5 text-xs ${emailTouched && !emailValid ? "text-red-700" : "text-gray-500"}`}
+                  >
+                    {emailTouched && !emailValid
+                      ? "Enter a valid email to continue to payment."
+                      : "We email your photo and order details here."}
+                  </p>
+                </div>
                 {fullImageUrl ? (
-                  <PaymentButton
-                    amount={activePricing.amountInSubunits}
-                    currency={currency}
-                    description={paymentDescription}
-                    customId={`${result.result_id}|${plan}`}
-                    onSuccess={handlePaid}
-                  />
+                  <div
+                    className={emailValid ? "" : "pointer-events-none opacity-50"}
+                    onPointerDownCapture={() => setEmailTouched(true)}
+                    aria-disabled={!emailValid}
+                  >
+                    <PaymentButton
+                      amount={activePricing.amountInSubunits}
+                      currency={currency}
+                      description={paymentDescription}
+                      customId={`${result.result_id}|${plan}`}
+                      disabled={!emailValid}
+                      onSuccess={handlePaid}
+                    />
+                  </div>
                 ) : (
                   <p role="alert" className="flex items-start gap-2.5 rounded-xl bg-red-50 p-3.5 text-sm text-red-800">
                     <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -390,13 +488,38 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
             <div role="status" className="flex items-start gap-2.5 rounded-xl bg-amber-50 p-4 text-sm ring-1 ring-amber-200 ring-inset">
               <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden="true" />
               <span>
-                Payment complete{paid.email ? <>. PayPal has sent your receipt to <strong>{paid.email}</strong></> : ""}.
-                PayPal order reference: <span className="font-mono">{paid.orderID}</span>. Keep this in case you need
-                to contact us.
+                Payment complete. PayPal order reference: <span className="font-mono">{paid.orderID}</span>.{" "}
+                {paid.mailStatus === "sent" && (
+                  <>
+                    We have emailed your photo to <strong>{paid.customerEmail}</strong>.
+                  </>
+                )}
+                {paid.mailStatus === "sending" && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> Sending your photo to{" "}
+                    <strong>{paid.customerEmail}</strong>…
+                  </span>
+                )}
+                {paid.mailStatus === "failed" && (
+                  <>
+                    We could not email your photo just now, so please download it below. Keep the order reference in
+                    case you need to contact us.
+                  </>
+                )}
               </span>
             </div>
 
-            {paid.planType === "expert_edit" && (
+            {paid.planType === "expert_edit" && paid.mailStatus === "sent" && (
+              <div className="rounded-xl bg-gray-50 p-4 text-sm ring-1 ring-gray-200 ring-inset">
+                <p className="font-semibold">Expert review in progress</p>
+                <p className="mt-1 text-gray-600">
+                  Our team has your photo and will email the checked version to {paid.customerEmail} within one
+                  working day.
+                </p>
+              </div>
+            )}
+
+            {paid.planType === "expert_edit" && paid.mailStatus === "failed" && (
               <div className="rounded-xl bg-gray-50 p-4 text-sm ring-1 ring-gray-200 ring-inset">
                 <p className="font-semibold">One more step for your expert review</p>
                 <p className="mt-1 text-gray-600">
