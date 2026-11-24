@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Server-side deploy for pixpassport.uk. Runs on the VPS (invoked by GitHub Actions over SSH,
+# Server-side deploy for id-photo-maker.com. Runs on the VPS (invoked by GitHub Actions over SSH,
 # or manually: bash scripts/deploy.sh [git-ref]).
 #
 # Safety features: single-run lock, clean-env fetch, build verification, health-check with
 # retries, automatic rollback to the previous commit + previous .next build on any failure.
 set -Eeuo pipefail
 
-APP_NAME="pixpassport-uk"
-APP_DIR="${APP_DIR:-$HOME/apps/pixpassport.uk}"
-APP_PORT="${APP_PORT:-3007}"
+APP_NAME="id-photo-maker"
+APP_DIR="${APP_DIR:-$HOME/apps/id-photo-maker.com}"
+APP_PORT="${APP_PORT:-3009}"
 BRANCH="${BRANCH:-main}"
 TARGET_REF="${1:-origin/$BRANCH}"
 HEALTH_URL="http://127.0.0.1:${APP_PORT}/"

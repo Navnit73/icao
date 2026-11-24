@@ -33,7 +33,9 @@ Pick the next free port and **check it is free** first: `ss -tlnp | grep :<port>
 | Port | App |
 |---|---|
 | 3007 | pixpassport.uk (`pixpassport-uk`) |
-| 3008+ | next apps. Add a row here when you take one. |
+| 3008 | idphoto.us (`idphoto-us`) |
+| 3009 | id-photo-maker.com (`id-photo-maker`) — this repo |
+| 3010+ | next apps. Add a row here when you take one. |
 
 ## 2. Files to add to the app repo
 
