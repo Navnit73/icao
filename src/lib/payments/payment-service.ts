@@ -1,0 +1,314 @@
+/**
+ * Payment Service — business logic for creating, verifying, and managing payments
+ */
+
+import crypto from "crypto";
+import { after } from "next/server";
+import {
+  getPaymentCollection,
+  type PaymentDocument,
+  type PaymentStatus,
+} from "@/lib/models/Payment";
+import { PRICING, getPlanPricing, type PlanType } from "@/lib/config/pricing";
+import { BASE_CURRENCY, type CurrencyCode } from "@/lib/currency";
+import { createRazorpayOrder } from "@/lib/payments/razorpay";
+import { uploadOriginalPhotoToCloudinary } from "@/lib/storage/cloudinary";
+import { logActivity } from "@/lib/logging/activity-logger";
+
+const PAYMENT_SOURCE = "pixpassport.uk";
+
+/**
+ * Razorpay rejects unsupported currencies with a 400 BAD_REQUEST_ERROR naming the
+ * currency field, e.g. { statusCode: 400, error: { field: "currency", description: "Currency is not supported" } }.
+ */
+function isRazorpayCurrencyError(err: unknown): boolean {
+  const e = err as { statusCode?: number; error?: { field?: string; description?: string } } | null;
+  if (!e || e.statusCode !== 400) return false;
+  return e.error?.field === "currency" || /currency/i.test(e.error?.description || "");
+}
+
+/**
+ * Create a new pending payment and Razorpay order.
+ */
+export async function createPaymentOrder(params: {
+  email: string;
+  resultId: string;
+  imageUrl: string;
+  previewUrl: string;
+  originalPreview?: string;
+  planType?: PlanType;
+  dimensions?: string;
+  format?: string;
+  sizeKb?: number;
+  countryCode?: string;
+  countryName?: string;
+  /** Currency resolved server-side from the visitor's geo-IP country */
+  currency?: CurrencyCode;
+  /** Visitor's geo-IP country (ISO alpha-2), for audit */
+  geoCountry?: string | null;
+  userAgent?: string;
+  ipHash?: string;
+}): Promise<{
+  paymentId: string;
+  razorpayOrderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}> {
+  const paymentId = crypto.randomUUID();
+  const col = await getPaymentCollection();
+  const plan = params.planType || "standard";
+  let planPricing = getPlanPricing(plan, params.currency || BASE_CURRENCY);
+
+  // Check for duplicate pending orders for the same image, email, & plan
+  const existing = await col.findOne({
+    "image.resultId": params.resultId,
+    email: params.email,
+    currency: planPricing.currency,
+    amount: planPricing.amountInSubunits,
+    planType: plan,
+    status: "pending",
+    createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) }, // within 30 min
+  });
+
+  if (existing) {
+    // Reuse existing pending order
+    return {
+      paymentId: existing.paymentId,
+      razorpayOrderId: existing.razorpayOrderId,
+      amount: existing.amount,
+      currency: existing.currency,
+      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+    };
+  }
+
+  // Create Razorpay order — amount comes from server config, NOT from client
+  const orderNotes = {
+    // Identifies which site the payment came from (the Razorpay account is shared across sites)
+    source: PAYMENT_SOURCE,
+    website: `https://${PAYMENT_SOURCE}`,
+    paymentId,
+    email: params.email,
+    resultId: params.resultId,
+    planType: plan,
+    productType: plan === "expert_edit" ? "expert_edit_passport_photo" : PRICING.productType,
+    country: params.countryName || "GB",
+    geoCountry: params.geoCountry || "unknown",
+  };
+
+  let rzOrder: Awaited<ReturnType<typeof createRazorpayOrder>>;
+  try {
+    rzOrder = await createRazorpayOrder({
+      amount: planPricing.amountInSubunits,
+      currency: planPricing.currency,
+      receipt: paymentId,
+      notes: orderNotes,
+    });
+  } catch (err) {
+    // Currency not enabled on the Razorpay account — fall back to the base currency.
+    // Any other failure (network, auth) is rethrown so we never silently switch currency.
+    if (planPricing.currency === BASE_CURRENCY || !isRazorpayCurrencyError(err)) throw err;
+    console.warn(
+      `[payment-service] Razorpay order in ${planPricing.currency} failed, falling back to ${BASE_CURRENCY}:`,
+      err
+    );
+    planPricing = getPlanPricing(plan, BASE_CURRENCY);
+    rzOrder = await createRazorpayOrder({
+      amount: planPricing.amountInSubunits,
+      currency: planPricing.currency,
+      receipt: paymentId,
+      notes: orderNotes,
+    });
+  }
+
+  // Original photo: an http(s) URL is stored directly. A data URI is uploaded to Cloudinary
+  // AFTER the response (below), so the customer isn't kept waiting on a multi-MB upload.
+  const originalImageUrl: string | undefined = params.originalPreview?.startsWith("http")
+    ? params.originalPreview
+    : undefined;
+  const originalToUpload =
+    params.originalPreview && !originalImageUrl ? params.originalPreview : undefined;
+
+  const payment: PaymentDocument = {
+    paymentId,
+    email: params.email,
+    razorpayOrderId: rzOrder.id,
+    amount: planPricing.amountInSubunits,
+    currency: planPricing.currency,
+    status: "pending",
+    fulfillmentStatus: "pending",
+    productType: plan === "expert_edit" ? "expert_edit_passport_photo" : PRICING.productType,
+    planType: plan,
+    expertReviewStatus: plan === "expert_edit" ? "pending" : undefined,
+    image: {
+      resultId: params.resultId,
+      imageUrl: params.imageUrl,
+      previewUrl: params.previewUrl,
+      originalImageUrl,
+      format: params.format,
+      dimensions: params.dimensions,
+      sizeKb: params.sizeKb,
+    },
+    invoice: {},
+    emailDelivery: {
+      status: "pending",
+      attempts: 0,
+    },
+    metadata: {
+      userAgent: params.userAgent,
+      ipHash: params.ipHash,
+      countryCode: params.countryCode,
+      countryName: params.countryName,
+      geoCountry: params.geoCountry || undefined,
+      source: PAYMENT_SOURCE,
+      isExpertEdit: plan === "expert_edit",
+      originalPreviewUrl: originalImageUrl,
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  await col.insertOne(payment);
+
+  after(async () => {
+    if (originalToUpload) {
+      try {
+        const uploadRes = await uploadOriginalPhotoToCloudinary({
+          imageSource: originalToUpload,
+          resultId: params.resultId,
+        });
+        if (uploadRes) {
+          await col.updateOne(
+            { paymentId },
+            {
+              $set: {
+                "image.originalImageUrl": uploadRes.secureUrl,
+                "metadata.originalPreviewUrl": uploadRes.secureUrl,
+                updatedAt: new Date(),
+              },
+            }
+          );
+        }
+      } catch (uploadErr) {
+        console.warn("[payment-service] Original photo upload warning:", uploadErr);
+      }
+    }
+    await logActivity({
+      event: "razorpay_order_created",
+      status: "success",
+      paymentId,
+      email: params.email,
+      metadata: {
+        razorpayOrderId: rzOrder.id,
+        resultId: params.resultId,
+        planType: plan,
+        amount: planPricing.amountInSubunits,
+        currency: planPricing.currency,
+      },
+    });
+  });
+
+  return {
+    paymentId,
+    razorpayOrderId: rzOrder.id,
+    amount: planPricing.amountInSubunits,
+    currency: planPricing.currency,
+    keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+  };
+}
+
+/**
+ * Mark a payment as paid (idempotent).
+ * Returns true if this call actually transitioned the status.
+ */
+export async function markPaymentPaid(params: {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+}): Promise<{ transitioned: boolean; payment: PaymentDocument | null }> {
+  const col = await getPaymentCollection();
+
+  // Idempotent: only transition from pending/authorized → paid
+  const result = await col.findOneAndUpdate(
+    {
+      razorpayOrderId: params.razorpayOrderId,
+      status: { $in: ["pending", "authorized"] as PaymentStatus[] },
+    },
+    {
+      $set: {
+        razorpayPaymentId: params.razorpayPaymentId,
+        status: "paid" as PaymentStatus,
+        paidAt: new Date(),
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+
+  if (result) {
+    return { transitioned: true, payment: result };
+  }
+
+  // Maybe already paid — fetch to check
+  const existing = await col.findOne({
+    razorpayOrderId: params.razorpayOrderId,
+  });
+
+  return { transitioned: false, payment: existing };
+}
+
+/**
+ * Mark payment as failed.
+ */
+export async function markPaymentFailed(params: {
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  reason?: string;
+}): Promise<void> {
+  const col = await getPaymentCollection();
+  await col.updateOne(
+    {
+      razorpayOrderId: params.razorpayOrderId,
+      status: { $in: ["pending", "authorized"] as PaymentStatus[] },
+    },
+    {
+      $set: {
+        razorpayPaymentId: params.razorpayPaymentId,
+        status: "failed" as PaymentStatus,
+        updatedAt: new Date(),
+      },
+    }
+  );
+}
+
+/**
+ * Find a payment by internal paymentId.
+ */
+export async function getPaymentById(
+  paymentId: string
+): Promise<PaymentDocument | null> {
+  const col = await getPaymentCollection();
+  return col.findOne({ paymentId });
+}
+
+/**
+ * Find a payment by Razorpay order ID.
+ */
+export async function getPaymentByOrderId(
+  razorpayOrderId: string
+): Promise<PaymentDocument | null> {
+  const col = await getPaymentCollection();
+  return col.findOne({ razorpayOrderId });
+}
+
+/**
+ * Find payment by result ID that is already paid.
+ */
+export async function getPaidPaymentByResultId(
+  resultId: string
+): Promise<PaymentDocument | null> {
+  const col = await getPaymentCollection();
+  return col.findOne({
+    "image.resultId": resultId,
+    status: "paid",
+  });
+}

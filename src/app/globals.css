@@ -1,0 +1,670 @@
+/* ========================================
+   1. Tailwind CSS Import
+   ======================================== */
+@import "tailwindcss";
+
+/* ========================================
+   2. DaisyUI & Typography Plugin Configuration
+   ======================================== */
+@plugin "daisyui";
+@plugin "@tailwindcss/typography";
+
+/* ========================================
+   3. Custom DaisyUI Theme — pixpassport
+   ======================================== */
+@plugin "daisyui/theme" {
+  name: "pixpassport";
+  default: true;
+
+  /* Brand colours: amber on white (black text on amber for contrast) */
+  --color-primary: #F59E0B;         /* amber-500 */
+  --color-primary-content: #000000;
+  --color-secondary: #000000;
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #B45309;          /* amber-700, for text/links on white */
+  --color-accent-content: #FFFFFF;
+
+  /* Neutral palette */
+  --color-neutral: #000000;
+  --color-neutral-content: #FFFFFF;
+
+  /* Base surface colours */
+  --color-base-100: #FFFFFF;
+  --color-base-200: #F5F5F5;        /* gray-100 */
+  --color-base-300: #E5E5E5;        /* gray-200 */
+  --color-base-content: #000000;
+
+  /* Semantic feedback colours */
+  --color-info: #0284C7;
+  --color-success: #15803D;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+
+  /* Border radius */
+  --radius-btn: 0.75rem;
+  --radius-box: 1rem;
+  --radius-field: 0.75rem;
+}
+
+/* ========================================
+   4. Global CSS Variables & Responsive Scale
+   ======================================== */
+:root {
+  /* Spacing scale overrides */
+  --section-gap: 3.5rem;
+  --container-padding: 1rem;
+
+  /* Transition defaults */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Refined Shadow tokens */
+  /* Flat design: no card shadows */
+  --shadow-card: none;
+  --shadow-card-hover: none;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --section-gap: 4.5rem;
+    --container-padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --section-gap: 5.5rem;
+    --container-padding: 2rem;
+  }
+}
+
+/* ========================================
+   5. Typography Configuration
+   ======================================== */
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ========================================
+   6. Base Styles
+   ======================================== */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+}
+
+/* Layered so Tailwind text-* utilities can override per heading */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.35rem;
+  }
+
+  h4 {
+    font-size: 1.1rem;
+  }
+
+  @media (min-width: 640px) {
+    h1 {
+      font-size: 2.75rem;
+    }
+    h2 {
+      font-size: 2.15rem;
+    }
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 3.25rem;
+    }
+    h2 {
+      font-size: 2.5rem;
+    }
+    h3 {
+      font-size: 1.75rem;
+    }
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ========================================
+   7. Reusable Utility Classes
+   ======================================== */
+
+/* Page section wrapper */
+.section-padding {
+  padding-top: var(--section-gap);
+  padding-bottom: var(--section-gap);
+}
+
+/* Max-width container with centered responsive padding */
+.container-narrow {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  width: 100%;
+}
+
+/* Card shadow utilities */
+.card-shadow {
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.card-shadow:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background-color: #172033;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  transition: top 150ms ease;
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  top: 1rem;
+  outline: 3px solid #D97706;
+  outline-offset: 2px;
+}
+
+/* High-contrast focus ring for keyboard nav */
+.focus-ring:focus-visible {
+  outline: 2px solid #D97706;
+  outline-offset: 2px;
+}
+
+/* Primary button styling — amber-400 with black text (high contrast) */
+.btn-primary {
+  background-color: #FBBF24 !important;
+  border-color: #FBBF24 !important;
+  color: #000000 !important;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background-color: #F59E0B !important;
+  border-color: #F59E0B !important;
+  color: #000000 !important;
+}
+
+.btn-primary:active {
+  background-color: #D97706 !important;
+  border-color: #D97706 !important;
+}
+
+/* Secondary outline button */
+.btn-secondary-outline {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary-outline:hover {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========================================
+   8. Accessibility & Reduced Motion
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Ensure minimum touch target sizes for buttons & interactive elements (WCAG 2.5.5 / 2.5.8) */
+.btn,
+.select,
+.input,
+[role="button"] {
+  min-height: 2.75rem;
+}
+
+/* Universal high-contrast visible focus indicators */
+:focus-visible {
+  outline: 2px solid #D97706;
+  outline-offset: 2px;
+}
+
+/* High-contrast focus on dark backgrounds */
+[data-theme="dark"] :focus-visible,
+.bg-secondary :focus-visible {
+  outline: 2px solid #84CC16;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   9. Print Media Styles
+   ======================================== */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  header,
+  footer,
+  nav,
+  .no-print,
+  .breadcrumbs,
+  .btn,
+  .skip-to-content {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ========================================
+   10. Markdown Content & Article Typography
+   ======================================== */
+.markdown-content {
+  color: #334155;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+@media (min-width: 640px) {
+  .markdown-content {
+    font-size: 1rem;
+  }
+}
+
+.markdown-content h2 {
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+@media (min-width: 640px) {
+  .markdown-content h2 {
+    font-size: 1.75rem;
+  }
+}
+
+.markdown-content h3 {
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .markdown-content h3 {
+    font-size: 1.3rem;
+  }
+}
+
+.markdown-content h4 {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.markdown-content strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.markdown-content a {
+  color: #4d7c0f;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms ease;
+}
+
+.markdown-content a:hover {
+  color: #365314;
+}
+
+.markdown-content img {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-content ul {
+  list-style-type: disc !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 1.5rem !important;
+  display: block !important;
+}
+
+.markdown-content ol {
+  list-style-type: decimal !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 1.5rem !important;
+  display: block !important;
+}
+
+.markdown-content li {
+  margin-top: 0.375rem !important;
+  margin-bottom: 0.375rem !important;
+  padding-left: 0.25rem !important;
+  line-height: 1.6 !important;
+  display: list-item !important;
+}
+
+.markdown-content li::marker {
+  color: #65a30d;
+  font-weight: bold;
+}
+
+.markdown-content table {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  overflow-x: auto !important;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  font-size: 0.875rem !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .markdown-content table {
+    display: table !important;
+  }
+}
+
+.markdown-content thead {
+  background-color: #f8fafc !important;
+}
+
+.markdown-content th {
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  background-color: #f1f5f9 !important;
+}
+
+.markdown-content th:not(:last-child),
+.markdown-content td:not(:last-child) {
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+.markdown-content td {
+  padding: 0.75rem 1rem !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+}
+
+.markdown-content tr:last-child td {
+  border-bottom: none !important;
+}
+
+.markdown-content tr:nth-child(even) td {
+  background-color: #f8fafc !important;
+}
+
+.markdown-content hr {
+  margin-top: 2rem !important;
+  margin-bottom: 2rem !important;
+  border: 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+.markdown-content code {
+  font-family: var(--font-mono) !important;
+  font-size: 0.85em !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+  padding: 0.15rem 0.4rem !important;
+  border-radius: 0.375rem !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid #65a30d !important;
+  background-color: #f7fee7 !important;
+  padding: 0.75rem 1rem !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+  color: #365314 !important;
+  font-style: italic !important;
+}
+
+.markdown-content details {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background-color: #ffffff;
+  margin-top: 0.875rem;
+  margin-bottom: 0.875rem;
+  overflow: hidden;
+  transition: all 150ms ease;
+}
+
+.markdown-content details[open] {
+  border-color: #84cc16;
+  background-color: #f7fee7;
+}
+
+.markdown-content summary {
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.markdown-content summary::-webkit-details-marker {
+  display: none;
+}
+
+.howto-content img {
+  display: block;
+  width: 100%;
+  max-width: 36rem;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+
+/* ========================================
+   Landing-page design language (mirrors mymacstorage.com, amber accent)
+   ======================================== */
+@layer base {
+  html {
+    scroll-padding-top: 5.5rem;
+  }
+  ::selection {
+    background: var(--color-amber-400);
+    color: #000;
+  }
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+@layer components {
+  /* Fine dot grid for hero and CTA backdrops */
+  .bg-dots {
+    background-image: radial-gradient(var(--dot, oklch(0% 0 0 / 0.07)) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Soft amber light behind the hero. Pure colour, no shadow. */
+  .bg-glow {
+    background-image: radial-gradient(60% 55% at 50% 0%, oklch(82.8% 0.189 84.429 / 0.28), transparent 70%);
+  }
+
+  /* Thin amber-to-grey edge for highlighted cards, drawn as a padded gradient behind the card */
+  .edge-amber {
+    background: linear-gradient(160deg, oklch(76.9% 0.188 70.08 / 0.7), oklch(92.2% 0 0) 45%, oklch(92.2% 0 0));
+  }
+
+  /* Smooth accordion where ::details-content is supported */
+  .faq-item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 0.3s ease,
+      content-visibility 0.3s allow-discrete;
+  }
+  .faq-item[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* Sections rise in as they scroll into view. CSS only. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* The combobox wrapper draws its own amber focus ring, so skip the outline on the inner input */
+input[role="combobox"]:focus-visible {
+  outline: none;
+}

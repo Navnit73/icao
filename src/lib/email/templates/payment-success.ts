@@ -1,0 +1,149 @@
+/**
+ * Payment success + image delivery email template
+ */
+
+import { formatMoney } from "@/lib/currency";
+import { baseEmailTemplate, escapeHtml } from "./base";
+import { PRICING } from "@/lib/config/pricing";
+
+export function paymentSuccessEmail(params: {
+  email: string;
+  paymentId: string;
+  razorpayPaymentId: string;
+  amount: number;
+  currency: string;
+  invoiceNumber: string;
+  downloadUrl: string;
+  invoiceUrl: string;
+  invoicePdfUrl?: string;
+  photoUrl?: string;
+  countryName?: string;
+  dimensions?: string;
+  planType?: "standard" | "expert_edit";
+}): { subject: string; html: string } {
+  const isExpert = params.planType === "expert_edit";
+  const productName = isExpert
+    ? "Official Passport Photo + Expert Manual Edit & Review"
+    : PRICING.productName;
+
+  const amountFormatted = formatMoney(params.amount, params.currency);
+
+  const subject = isExpert
+    ? `Your Passport Photo & Expert Review Order Confirmed — ${escapeHtml(PRICING.businessName)}`
+    : `Your Passport Photo is Ready — ${escapeHtml(PRICING.businessName)}`;
+
+  const bodyHtml = `
+    <!-- Success Icon -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="display:inline-block;width:56px;height:56px;border-radius:50%;background-color:#f0fdf4;line-height:56px;font-size:28px;">
+        ✅
+      </div>
+    </div>
+
+    <h2 style="color:#0f172a;font-size:22px;font-weight:800;text-align:center;margin:0 0 8px;letter-spacing:-0.5px;">
+      ${isExpert ? "Payment Confirmed &amp; Expert Review Queued!" : "Payment Confirmed!"}
+    </h2>
+    <p style="color:#64748b;font-size:14px;text-align:center;margin:0 0 28px;">
+      ${
+        isExpert
+          ? "Your AI passport photo is ready for instant download below, and our human specialists have received your original photo for manual inspection &amp; final polish."
+          : "Your biometric passport photo is ready for instant download."
+      }
+    </p>
+
+    ${
+      isExpert
+        ? `
+    <!-- Expert Edit VIP Box -->
+    <div style="background-color:#fefce8;border:1px solid #fde047;border-radius:10px;padding:16px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:800;color:#854d0e;margin-bottom:6px;">
+        ⭐ VIP Expert Manual Review Included (${escapeHtml(amountFormatted)})
+      </div>
+      <div style="font-size:13px;color:#713f12;line-height:1.5;">
+        Our photo technicians will perform manual lighting enhancement, shadow removal, and background precision adjustments for <strong>${escapeHtml(params.countryName || "official")}</strong> standards. You will receive the human-verified master files via email.
+      </div>
+    </div>
+    `
+        : ""
+    }
+
+    ${
+      params.photoUrl && !isExpert
+        ? `
+    <!-- User Photo -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <img src="${escapeHtml(params.photoUrl)}" alt="Your passport photo" width="175" style="width:175px;max-width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;display:inline-block;"/>
+    </div>
+    `
+        : ""
+    }
+
+    <!-- Order Details -->
+    <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:24px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+        <tr>
+          <td style="padding:6px 0;color:#64748b;">Product</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">${escapeHtml(productName)}</td>
+        </tr>
+        ${params.countryName ? `<tr>
+          <td style="padding:6px 0;color:#64748b;">Country</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">${escapeHtml(params.countryName)}</td>
+        </tr>` : ""}
+        ${params.dimensions ? `<tr>
+          <td style="padding:6px 0;color:#64748b;">Dimensions</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">${escapeHtml(params.dimensions)}</td>
+        </tr>` : ""}
+        <tr>
+          <td style="padding:6px 0;color:#64748b;">Amount Paid</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:700;text-align:right;font-size:16px;">${escapeHtml(amountFormatted)}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;color:#64748b;">Invoice</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">#${escapeHtml(params.invoiceNumber)}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;color:#64748b;">Payment Ref</td>
+          <td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;font-family:monospace;font-size:12px;">${escapeHtml(params.razorpayPaymentId)}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Download CTA -->
+    <div style="text-align:center;margin-bottom:16px;">
+      <a href="${escapeHtml(params.downloadUrl)}" style="display:inline-block;padding:14px 32px;background-color:#4d7c0f;color:#ffffff !important;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+        ⬇️ Download Your Photo
+      </a>
+    </div>
+
+    <p style="text-align:center;font-size:12px;color:#94a3b8;margin-bottom:24px;">
+      This download link expires in 72 hours.
+    </p>
+
+
+  
+
+    <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0;"/>
+
+    <!-- Invoice Link -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${escapeHtml(params.invoiceUrl)}" style="color:#4d7c0f;font-weight:600;font-size:13px;text-decoration:underline;">
+        View Interactive Web Invoice #${escapeHtml(params.invoiceNumber)}
+      </a>
+    </div>
+
+    <!-- Support -->
+    <div style="background-color:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;font-size:13px;color:#92400e;">
+      <strong>Need help?</strong> Reply to this email or visit
+      <a href="${escapeHtml(PRICING.siteUrl)}/#contact" style="color:#4d7c0f;text-decoration:underline;">our support page</a>.
+      We offer a full refund if your photo is rejected by any government agency.
+    </div>
+  `;
+
+  return {
+    subject,
+    html: baseEmailTemplate({
+      preheader: `Your ${params.countryName || ""} passport photo is ready for download — ${amountFormatted} paid.`,
+      bodyHtml,
+    }),
+  };
+}
