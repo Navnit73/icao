@@ -4,6 +4,7 @@
  */
 
 import { PRICING } from "@/lib/config/pricing";
+import { LOGO_URL } from "@/lib/site";
 import { extractCustomerName } from "@/lib/payments/razorpay";
 
 let _counter = Math.floor(Math.random() * 1000) + 100;
@@ -496,7 +497,7 @@ export function generateInvoiceHtml(params: GenerateInvoiceHtmlParams): string {
   <div class="action-bar">
     <a href="${PRICING.siteUrl}" class="btn btn-secondary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      Back to PixPassport
+      Back to ID Photo Maker
     </a>
     <button onclick="window.print()" class="btn btn-primary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
@@ -509,13 +510,13 @@ export function generateInvoiceHtml(params: GenerateInvoiceHtmlParams): string {
     <div class="header-row">
       <div class="brand-section">
         <div class="brand-logo-badge" style="background: transparent; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
-          <img src="https://res.cloudinary.com/dipzpwbbk/image/upload/v1790589684/pixpassport_eq8aay.jpg" alt="PixPassport Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+          <img src="${LOGO_URL}" alt="ID Photo Maker Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
         </div>
         <div>
-          <div class="brand-title">PixPassport</div>
+          <div class="brand-title">ID Photo Maker</div>
           <div class="brand-subtitle">Official Payment Receipt &amp; Tax Invoice</div>
           <div class="brand-contact">
-            support@pixpassport.com &bull; <a href="${PRICING.siteUrl}">${PRICING.siteUrl.replace(/^https?:\/\//, '')}</a>
+            support@id-photo-maker.com &bull; <a href="${PRICING.siteUrl}">${PRICING.siteUrl.replace(/^https?:\/\//, '')}</a>
           </div>
         </div>
       </div>
@@ -629,7 +630,7 @@ export function generateInvoiceHtml(params: GenerateInvoiceHtmlParams): string {
       </div>
       <div class="compliance-footer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Digitally authenticated &amp; verified by PixPassport Automated Billing Engine.</span>
+        <span>Digitally authenticated &amp; verified by ID Photo Maker Automated Billing Engine.</span>
       </div>
     </div>
 

@@ -341,7 +341,7 @@ export default function PrintTemplateGenerator({
     ctx.fillStyle = "#94A3B8";
     ctx.font = `${Math.round(mmToPx(2.2))}px system-ui, -apple-system, sans-serif`;
     ctx.textAlign = "center";
-    const labelText = `PixPassport.uk · ${currentPaper.name} (300 DPI) · ${photoWidthMm}×${photoHeightMm} mm (${activePhotoCount} Photos) · Print at 100% Scale`;
+    const labelText = `ID Photo Maker · ${currentPaper.name} (300 DPI) · ${photoWidthMm}×${photoHeightMm} mm (${activePhotoCount} Photos) · Print at 100% Scale`;
     ctx.fillText(labelText, paperWidthPx / 2, paperHeightPx - Math.round(mmToPx(2)));
     ctx.restore();
   }, [
@@ -457,7 +457,7 @@ export default function PrintTemplateGenerator({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Print Passport Photo Sheet - PixPassport</title>
+          <title>Print Passport Photo Sheet - ID Photo Maker</title>
           <style>
             @page {
               size: ${paperWidthMm}mm ${paperHeightMm}mm;

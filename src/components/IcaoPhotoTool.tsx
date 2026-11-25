@@ -13,10 +13,14 @@ import {
 } from "@/lib/photo-processing";
 
 export interface IcaoPhotoToolProps {
-  /** Visitor's country from geo-IP; preselects the matching document format. */
+  /** Country to preselect; null/undefined uses fallbackCountryCode until detection finishes. */
   initialCountryCode?: string | null;
+  /** Look up the visitor's geo-IP country from /api/geo and preselect it (pages stay static). */
+  detectVisitorCountry?: boolean;
   /** Used when the geo country has no format in src/config/countries.json. */
   fallbackCountryCode?: string;
+  /** Optional custom button label inside the upload zone. */
+  ctaLabel?: string;
 }
 
 type Stage = "upload" | "processing";
@@ -41,7 +45,9 @@ const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) =>
  */
 export default function IcaoPhotoTool({
   initialCountryCode,
+  detectVisitorCountry = false,
   fallbackCountryCode = "GB",
+  ctaLabel = "Fix my photo free",
 }: IcaoPhotoToolProps) {
   const router = useRouter();
   const startCode =
@@ -49,6 +55,28 @@ export default function IcaoPhotoTool({
     fallbackCountryCode;
 
   const [countryCode, setCountryCode] = useState(startCode);
+  // Once the visitor picks a country, geo detection must not override it.
+  const userPickedCountry = useRef(false);
+
+  useEffect(() => {
+    if (!detectVisitorCountry) return;
+    const controller = new AbortController();
+    fetch("/api/geo", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { country?: string | null } | null) => {
+        const match = data?.country ? getCountryByCode(data.country) : undefined;
+        if (match && !userPickedCountry.current) setCountryCode(match.country_code);
+      })
+      .catch(() => {
+        // Keep the fallback country
+      });
+    return () => controller.abort();
+  }, [detectVisitorCountry]);
+
+  function handleCountryChange(code: string) {
+    userPickedCountry.current = true;
+    setCountryCode(code);
+  }
   const country: CountryPassportConfig =
     getCountryByCode(countryCode) || getCountryByCode(fallbackCountryCode) || COUNTRIES[0];
 
@@ -176,7 +204,7 @@ export default function IcaoPhotoTool({
               label="Which passport, visa or ID is this photo for?"
               countries={SORTED_COUNTRIES}
               value={country.country_code}
-              onChange={setCountryCode}
+              onChange={handleCountryChange}
             />
 
             <div
@@ -208,7 +236,7 @@ export default function IcaoPhotoTool({
                 JPEG, PNG or WebP up to {MAX_FILE_SIZE_MB} MB · a phone photo is fine
               </p>
               <span className={`${btnPrimary} mt-4 w-full sm:w-auto`}>
-                Fix my photo free
+                {ctaLabel}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </span>
             </div>

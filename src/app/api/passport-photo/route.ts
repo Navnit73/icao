@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Next.js API Route Proxy for https://api.pixpassport.com/process
+ * Next.js API Route Proxy for https://api.id-photo-maker.com/process
  *
  * Endpoint: POST /api/passport-photo
  * Accepts: multipart/form-data with "image", "country_code", "document_type"

@@ -1,44 +1,30 @@
 /**
- * CLI Script: Submit all PixPassport URLs to IndexNow
+ * CLI Script: Submit all ID Photo Maker (id-photo-maker.com) URLs to IndexNow
  * Usage: npm run indexnow
  */
 
 const INDEXNOW_KEY = "0c3dc5e8833b46beb209705aa05e5683";
-const INDEXNOW_HOST = "pixpassport.uk";
+const INDEXNOW_HOST = "id-photo-maker.com";
 const INDEXNOW_KEY_LOCATION = `https://${INDEXNOW_HOST}/${INDEXNOW_KEY}.txt`;
 
-const toolSlugs = [
-  "digital-passport-photo",
-  "image-to-passport-size-converter",
-  "indian-passport-photo-maker",
-  "online-id-photo-maker",
-  "order-passport-photos-online",
-  "passport-photo-at-home",
-  "passport-photo-tool",
-  "photo-size-35x45mm",
-  "photo-railcard",
-  "schengen-visa-photo",
-  "uk-baby-passport-photo",
-  "uk-driving-licence-photo",
-  "uk-passport-photo",
-  "us-visa-photo-tool",
-  "passport-renewal-photo-online",
+const paths = [
+  "",
+  "/passport-photo-checker",
+  "/uk/passport-photo-checker",
+  "/us/visa-photo-checker",
+  "/dv-lottery-photo-checker",
+  "/passport-photo-template-4x6",
+  "/print-passport-photo-a4",
+  "/35x45-photo-maker",
+  "/white-background-passport-photo",
+  "/india/passport-photo-maker",
+  "/digital-passport-photo",
+  "/passport-size-photo-maker",
+  "/us/passport-photo-checker",
+  "/us/passport-photo-size",
 ];
 
-const staticPages = [
-  `https://${INDEXNOW_HOST}`,
-  `https://${INDEXNOW_HOST}/passport-size-photo-maker`,
-  `https://${INDEXNOW_HOST}/passport-photo-print-template-generator`,
-  `https://${INDEXNOW_HOST}/about-us`,
-  `https://${INDEXNOW_HOST}/contact-us`,
-  `https://${INDEXNOW_HOST}/data-security-privacy-safeguards`,
-  `https://${INDEXNOW_HOST}/privacy-policy`,
-  `https://${INDEXNOW_HOST}/terms-of-service`,
-  `https://${INDEXNOW_HOST}/refund-policy`,
-];
-
-const toolPages = toolSlugs.map((slug) => `https://${INDEXNOW_HOST}/tool/${slug}`);
-const allUrls = Array.from(new Set([...staticPages, ...toolPages]));
+const allUrls = paths.map((p) => `https://${INDEXNOW_HOST}${p}`);
 
 const payload = {
   host: INDEXNOW_HOST,

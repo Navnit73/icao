@@ -17,10 +17,10 @@ export function getResendClient(): Resend {
 }
 
 export const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL || "PixPassport <photo@pixpassport.uk>";
+  process.env.RESEND_FROM_EMAIL || "ID Photo Maker <photo@id-photo-maker.com>";
 
 export const REPLY_TO_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@pixpassport.com";
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@id-photo-maker.com";
 
 export const BCC_EMAILS: string[] = process.env.RESEND_BCC_EMAIL
   ? process.env.RESEND_BCC_EMAIL.split(",").map((s) => s.trim()).filter(Boolean)

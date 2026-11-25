@@ -10,32 +10,37 @@ export interface FooterProps {
 
 export const FOOTER_COLUMNS = [
   {
-    title: "Product",
+    title: "Photo Checkers",
     links: [
-      { href: "/#make-photo", label: "ICAO photo checker" },
-      { href: "/#how-to", label: "How it works" },
-      { href: "/#compare", label: "Compare" },
+      { href: "/", label: "ICAO photo checker" },
+      { href: "/passport-photo-checker", label: "Passport photo checker" },
+      { href: "/uk/passport-photo-checker", label: "UK passport photo checker" },
+      { href: "/us/passport-photo-checker", label: "US passport photo checker" },
+      { href: "/us/visa-photo-checker", label: "US visa photo checker" },
+      { href: "/dv-lottery-photo-checker", label: "DV lottery photo checker" },
     ],
   },
   {
-    title: "Guide",
+    title: "Makers & Print Sheets",
     links: [
-      { href: "/#what-is", label: "ICAO standard photograph" },
-      { href: "/#meaning", label: "“Photo not valid” error" },
+      { href: "/passport-size-photo-maker", label: "Passport size photo maker" },
+      { href: "/digital-passport-photo", label: "Digital passport photo" },
+      { href: "/35x45-photo-maker", label: "35×45 mm photo maker" },
+      { href: "/us/passport-photo-size", label: "US passport photo size" },
+      { href: "/white-background-passport-photo", label: "White background photo" },
+      { href: "/india/passport-photo-maker", label: "Indian passport photo" },
+      { href: "/passport-photo-template-4x6", label: "4×6 print template" },
+      { href: "/print-passport-photo-a4", label: "Print on A4 paper" },
+    ],
+  },
+  {
+    title: "Guide & Legal",
+    links: [
       { href: "/#requirements", label: "ICAO requirements" },
-      { href: "/#examples", label: "Photo examples" },
-      { href: "/#sizes", label: "Photo sizes" },
-      { href: "/#india", label: "Indian passport photo" },
+      { href: "/#meaning", label: "“Photo not valid” error" },
       { href: "/#faq", label: "FAQ" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
       { href: "/#refunds", label: "Refund policy" },
-      { href: "/#privacy", label: "Privacy" },
-      { href: "/#terms", label: "Terms" },
-      { href: "/#contact", label: "Contact" },
+      { href: "/#privacy", label: "Privacy & terms" },
     ],
   },
 ];
@@ -48,8 +53,8 @@ export default function Footer({ supportEmail = PRICING.supportEmail, priceText 
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:grid-cols-[1.6fr_repeat(3,minmax(0,1fr))]">
           <div className="col-span-2 sm:col-span-4 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 font-semibold">
-              <Image src="/pixpassport.jpg" alt="PixPassport logo" width={28} height={28} className="rounded-md" />
-              PixPassport
+              <Image src="/id-photo-maker.jpg" alt="ID Photo Maker logo" width={28} height={28} className="rounded-md" />
+              ID Photo Maker
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-pretty text-gray-500">
               ICAO-compliant passport, visa and ID photos from your phone photo, for 50+ countries.
@@ -72,11 +77,11 @@ export default function Footer({ supportEmail = PRICING.supportEmail, priceText 
           ))}
         </div>
         <p className="mt-10 max-w-3xl text-xs leading-relaxed text-gray-500">
-          PixPassport is an independent service. It is not affiliated with ICAO, Passport Seva, the Ministry of
+          ID Photo Maker is an independent service. It is not affiliated with ICAO, Passport Seva, the Ministry of
           External Affairs, HM Passport Office or any government agency.
         </p>
         <div className="mt-6 flex flex-col gap-3 border-t border-gray-200 pt-6 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {year} PixPassport. All rights reserved.</p>
+          <p>&copy; {year} ID Photo Maker. All rights reserved.</p>
           <a href={`mailto:${supportEmail}`} className="transition-colors hover:text-black">
             {supportEmail}
           </a>

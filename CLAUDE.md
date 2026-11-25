@@ -1,25 +1,28 @@
-# PixPassport.uk — AI & Engineering Guide (CLAUDE.md)
+# id-photo-maker.com — AI & Engineering Guide (CLAUDE.md)
 
 ## 1. Project Overview & Mission
 
-**PixPassport.uk** is a modern, privacy-first, web-based UK passport photo maker. It enables users across the United Kingdom to create, crop, validate, and download digital passport photos compliant with HM Passport Office (HMPO) dimensions (35 mm × 45 mm) directly in their browser — 100% free with zero server data storage.
+**id-photo-maker.com** (the only production domain: `https://id-photo-maker.com`) is a global ICAO standard photo maker and checker. Visitors upload a photo, pick a country, and get a passport, visa or ID photo at that country's exact size, head ratio and pixel spec (UK, US, India / Passport Seva, Schengen and 50+ more), plus printable 6×4″ and A4 sheets.
+
+There is no other brand or domain. Never reference `pixpassport`, "PixPassport UK" or `icao-standard-photo.online` in user-facing code, metadata or docs. (The photo-processing backend still runs on its legacy host via `ID_PHOTO_MAKER_API_URL`; that is internal only.)
 
 ### Core Value Propositions
-* **100% In-Browser Privacy:** All image manipulation happens client-side via HTML5 Canvas and Web APIs. No images or biometric data are transmitted or stored.
-* **UK-Specific Dimension Compliance:** Generates 35 mm × 45 mm (600 DPI digital output) and multi-photo 6×4″ (10×15 cm) print-ready layouts.
-* **Instant & Accessible:** No paywalls, no watermark extortion, and no account creation required.
+
+- **Free check and preview:** the ICAO check and a corrected preview are free; the watermark-free download is paid (PayPal, geo-priced; see `src/lib/currency.ts`).
+- **Exact country specs:** sizes and pixel rules come from `src/config/countries.json`.
+- **Privacy:** photos are processed for the order only, never sold or shared; no account needed.
 
 ---
 
 ## 2. Technology Stack
 
-* **Framework:** Next.js (App Router)
-* **Runtime / Library:** React 19 / TypeScript 5
-* **Styling Engine:** Tailwind CSS v4
-* **UI Component Library:** DaisyUI v5 (CSS-first configuration via `@plugin "daisyui/theme"`)
-* **Icons:** Lucide React (`lucide-react`)
-* **Content Infrastructure:** `@next/mdx`, `@mdx-js/loader`, `@mdx-js/react`
-* **Fonts:** `next/font/google` (Geist Sans, Geist Mono)
+- **Framework:** Next.js (App Router)
+- **Runtime / Library:** React 19 / TypeScript 5
+- **Styling Engine:** Tailwind CSS v4
+- **UI Component Library:** DaisyUI v5 (CSS-first configuration via `@plugin "daisyui/theme"`)
+- **Icons:** Lucide React (`lucide-react`)
+- **Content Infrastructure:** `@next/mdx`, `@mdx-js/loader`, `@mdx-js/react`
+- **Fonts:** `next/font/google` (Geist Sans, Geist Mono)
 
 ---
 
@@ -44,98 +47,115 @@ npm start
 ## 4. Architectural Rules & Code Conventions
 
 ### Component Architecture
+
 1. **Server Components by Default:** Keep all layout, SEO, static copy, and JSON-LD components as React Server Components.
-2. **Client Components Only When Required:** Mark interactive components (e.g. `UploadCard.tsx`, `Navbar.tsx` mobile drawer) with `"use client"`.
+2. **Client Components Only When Required:** Mark interactive components (e.g. `IcaoPhotoTool.tsx`, `Navbar.tsx` mobile drawer) with `"use client"`.
+6. **Keep marketing pages static:** do not call `headers()` / `cookies()` in the homepage or landing pages; it makes them uncacheable. Geo-dependent UI fetches `/api/geo` in the browser (see `IcaoPhotoTool` `detectVisitorCountry`).
 3. **No Competing UI Libraries:** Do NOT install or introduce shadcn/ui, Material UI, Mantine, Chakra, or other third-party component libraries. Use DaisyUI and custom CSS utility classes.
 4. **Semantic Color Tokens:** Never hardcode arbitrary hex colors in component classes. Use semantic tokens (`bg-base-100`, `bg-base-200`, `text-primary`, `bg-secondary`, `text-base-content`, `border-base-300`).
 5. **Reusable Props & SEO Friendly:** All components export strongly typed prop interfaces and default data constants, utilizing semantic HTML (`<header>`, `<nav>`, `<section>`, `<article>`, `<ol>`, `<ul>`, `<figure>`, `<footer>`) and ARIA landmarks.
 
 ### Design & Styling (`src/app/globals.css`)
-* Theme is configured via `@plugin "daisyui/theme"` with the custom theme name `pixpassport`.
-* **Primary:** `#65A30D` (Lime Green — `lime-600`), hover `#4D7C0F` (`lime-700`)
-* **Secondary:** `#172033` (Deep Navy)
-* **Accent:** `#0F766E` (Teal)
-* **Neutral / Content:** `#172033`
-* **Base 100 / 200 / 300:** `#FFFFFF` / `#F8FAFC` / `#E2E8F0`
+
+- Theme is configured via `@plugin "daisyui/theme"` with the custom theme name `id-photo-maker`.
+- **Primary:** `#65A30D` (Lime Green — `lime-600`), hover `#4D7C0F` (`lime-700`)
+- **Secondary:** `#172033` (Deep Navy)
+- **Accent:** `#0F766E` (Teal)
+- **Neutral / Content:** `#172033`
+- **Base 100 / 200 / 300:** `#FFFFFF` / `#F8FAFC` / `#E2E8F0`
 
 ### Image Handling & Icons
-* Use `/pixpassport.jpg` for favicon, Apple touch icon, OpenGraph/Twitter previews, and brand logos.
-* Use Next.js `<Image />` component with descriptive `alt` text for brand logos and visual assets.
+
+- Use `/id-photo-maker.jpg` (`LOGO_URL` in `src/lib/site.ts`) for favicon, Apple touch icon, schema logo, and email/invoice logos.
+- Social preview images are per page: each route has an `opengraph-image.tsx` that calls `renderOgImage()` from `src/lib/og-image.tsx`. A new indexable page needs one too.
+- Use Next.js `<Image />` component with descriptive `alt` text for brand logos and visual assets.
 
 ---
 
-## 5. UK Passport Specifications Reference
+## 5. Photo Specifications
 
-| Parameter | Official UK Specification | PixPassport Implementation |
-| :--- | :--- | :--- |
-| **Photo Dimensions** | 35 mm width × 45 mm height | 35 mm × 45 mm (aspect ratio 7:9) |
-| **Head Height** | 29 mm to 34 mm (crown to chin) | 64% to 75% of vertical crop frame |
-| **Crown Clearance** | Approx. 3 mm to 5 mm from top | Top margin guide overlay |
-| **Digital Resolution** | Min 600 × 750 px (900 × 1200 px recommended) | Exported at 827 × 1063 px (600 DPI) |
-| **Print Sheet Format** | Standard 6×4 inch (10×15 cm) | 4-up or 6-up grid layout ready for home/pharmacy printing |
-| **Background** | Light grey or plain cream/white | Visual guide check reminder in upload area |
+Country specs (physical size, pixels, head ratio, file limits) live in `src/config/countries.json`; do not hardcode them in components. Common reference points:
+
+| Document                  | Size                      | Digital                      |
+| :------------------------ | :------------------------ | :--------------------------- |
+| India (Passport Seva 2.0) | 35 × 45 mm                | 630 × 810 px JPEG, ≤ 250 KB  |
+| United Kingdom (HMPO)     | 35 × 45 mm                | 600 × 750 px minimum         |
+| United States / DV / visa | 2 × 2 in (51 × 51 mm)     | 600 × 600 px, ≤ 240 KB (DV)  |
+| Schengen / EU             | 35 × 45 mm                | Set by each portal           |
 
 ---
 
-## 6. SEO & UK Search Engine Strategy
+## 6. SEO & Search Strategy
 
-### Primary & Secondary Target Keywords
-1. `digital photo for passport` *(Primary Keyword)*
-2. `create passport picture online`
-3. `digital photo for passport renewal`
-4. `print passport photo online`
-5. `UK passport photo maker`
+### Page targeting (one primary keyword per page, no overlap)
+
+| Route                              | Primary keyword                       |
+| :--------------------------------- | :------------------------------------ |
+| `/`                                | ICAO standard photograph              |
+| `/passport-photo-checker`          | passport photo checker                |
+| `/digital-passport-photo`          | digital passport photo                |
+| `/passport-size-photo-maker`       | passport size photo maker             |
+| `/35x45-photo-maker`               | 35x45 mm photo maker                  |
+| `/white-background-passport-photo` | passport photo with white background  |
+| `/uk/passport-photo-checker`       | UK passport photo checker             |
+| `/us/passport-photo-checker`       | US passport photo checker             |
+| `/us/passport-photo-size`          | US passport photo size                |
+| `/us/visa-photo-checker`           | US visa photo checker                 |
+| `/dv-lottery-photo-checker`        | DV lottery photo checker              |
+| `/india/passport-photo-maker`      | Indian passport photo maker           |
+| `/passport-photo-template-4x6`     | passport photo 4x6 template           |
+| `/print-passport-photo-a4`         | print passport photo on A4            |
+
+Landing page copy lives in `src/lib/seo/batch*-pages.ts` and renders through `CompactLandingPage.tsx`.
 
 ### Mandatory Metadata & Crawling Rules
-* **Metadata Base:** Must always resolve to `https://pixpassport.uk`.
-* **Canonical URL:** `https://pixpassport.uk` with `en-GB` hreflang alternate.
-* **Geographical Targeting:** `geo.region: "GB"`, `geo.placename: "United Kingdom"`, `content-language: "en-GB"`.
-* **Crawling & Indexing:**
-  * `src/app/robots.ts` -> Generates `/robots.txt` pointing to `/sitemap.xml`
-  * `public/sitemap.xml` -> Static XML sitemap for manual updates. **CRITICAL RULE:** Do NOT add `<lastmod>` tags. Keep entries strictly to `<loc>`, `<changefreq>`, `<priority>`, and `<xhtml:link>`.
-  * `src/app/sitemap.ts` -> Dynamic sitemap generator. **CRITICAL RULE:** Do NOT add `lastModified` or `stableLastModified` to `src/app/sitemap.ts` entries. Keep entries strictly to `{ url, changeFrequency, priority, alternates }`.
-* **Passport Photo API (`https://api.pixpassport.com/`):**
-  * `src/lib/passport-api.ts` -> Server-side helper with authentication headers (`Authorization: Bearer <key>`, `x-api-key: <key>`).
-  * `src/app/api/passport-photo/route.ts` -> Secure server-side route proxy ensuring the API key is never exposed to client browsers.
+
+- **Site URL:** always use `getSiteUrl()` / `SITE_URL` from `src/lib/site.ts`; never read `NEXT_PUBLIC_SITE_URL` directly. It resolves to `https://id-photo-maker.com` (CI sets the same value).
+- **Canonical:** every indexable page sets a self-referencing `alternates.canonical`. The root layout deliberately sets none.
+- **No hreflang:** the site is English-only with no translated or regional duplicates, so do not add `alternates.languages` to metadata or the sitemap.
+- **Sitemap:** `src/app/sitemap.ts` is the only sitemap (there is no `public/sitemap.xml`). Add every new indexable route to `ROUTES`. **CRITICAL RULE:** do NOT add `lastModified`; entries are strictly `{ url, changeFrequency, priority }`.
+- **robots:** `src/app/robots.ts` blocks `/api/` and `/preview/`; preview pages are also `noindex`.
+- **Structured data:** `src/components/JsonLd.tsx` (Organization, WebSite, WebPage, WebApplication with offers, FAQPage, HowTo, BreadcrumbList).
+- **Passport Photo API:** `src/lib/passport-api.ts` (server-side, `Authorization: Bearer <key>` and `x-api-key`), proxied by `src/app/api/passport-photo/route.ts` so the key never reaches the browser.
 
 ---
 
 ## 7. Directory Structure
 
 ```
-pixpassport.uk/
+id-photo-maker.com/
 ├── public/
-│   ├── pixpassport.jpg        # Brand asset, favicon, apple-touch-icon, OG image
-│   └── sitemap.xml            # Static XML sitemap for manual editing
+│   ├── id-photo-maker.jpg         # Brand logo (schema, emails, invoices)
+│   └── images/                    # Site-hosted example images
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   └── passport-photo/
-│   │   │       └── route.ts   # Secure API proxy for https://api.pixpassport.com/
-│   │   ├── apple-icon.jpg     # App Router apple touch icon
-│   │   ├── globals.css        # Tailwind CSS v4, DaisyUI theme, CSS tokens
-│   │   ├── icon.jpg           # App Router favicon/icon
-│   │   ├── layout.tsx         # Root layout with comprehensive UK SEO metadata
-│   │   ├── page.tsx           # Homepage assembly
-│   │   └── robots.ts          # Programmatic robots.txt
+│   │   │   ├── geo/route.ts           # Visitor country for client-side preselection
+│   │   │   ├── passport-photo/route.ts # Server-side proxy to the photo API
+│   │   │   ├── orders/, payments/, webhooks/, invoices/, download/, indexnow/
+│   │   ├── <landing-page>/            # 13 keyword landing pages (see section 6)
+│   │   │   ├── page.tsx               # Static; renders CompactLandingPage
+│   │   │   └── opengraph-image.tsx    # Per-page social preview image
+│   │   ├── preview/[id]/page.tsx      # Paid-download preview (noindex)
+│   │   ├── layout.tsx                 # Root layout and shared metadata
+│   │   ├── page.tsx                   # Homepage (static)
+│   │   ├── opengraph-image.tsx        # Homepage social preview image
+│   │   ├── not-found.tsx              # 404 (noindex)
+│   │   ├── robots.ts                  # robots.txt
+│   │   └── sitemap.ts                 # sitemap.xml (only sitemap)
 │   ├── components/
-│   │   ├── Footer.tsx         # Site footer with brand, navigation & UK notice
-│   │   ├── JsonLd.tsx         # Schema.org JSON-LD structured data graph
-│   │   └── Navbar.tsx         # Sticky header with brand logo & mobile menu
-│   ├── config/
-│   │   ├── countries.json     # Global passport dimensions JSON database
-│   │   └── countries.ts       # Typed country configuration and lookup utilities
-│   ├── lib/
-│   │   └── passport-api.ts    # PixPassport API client helper
-│   └── mdx-components.tsx     # MDX typography styling bindings
-├── .gitignore                 # Clean repository ignore configuration
-├── .prettierignore            # Prettier ignore rules
-├── .prettierrc                # Code formatting configuration
-├── CLAUDE.md                  # Assistant and developer reference guide
-├── DESIGN.md                  # Complete design system & visual guidelines
-├── eslint.config.mjs          # ESLint rules
-├── next.config.ts             # Next.js build and MDX configuration
-├── package.json               # Dependencies and npm scripts
-├── README.md                  # Public project documentation
-└── tsconfig.json              # TypeScript strict configuration
+│   │   ├── CompactLandingPage.tsx     # Landing page template + buildCompactMetadata()
+│   │   ├── IcaoPhotoTool.tsx          # Upload + country picker (client)
+│   │   ├── JsonLd.tsx                 # Schema.org graph
+│   │   ├── PrintTemplateGenerator.tsx # 6×4″ / A4 print sheets (client)
+│   │   └── Navbar.tsx, Footer.tsx, Section.tsx, PhotoPreview.tsx, ...
+│   ├── config/countries.json, countries.ts   # Country photo specs
+│   └── lib/
+│       ├── site.ts                    # SITE_URL, getSiteUrl(), LOGO_URL, HERO_IMAGE
+│       ├── og-image.tsx               # renderOgImage() for opengraph-image.tsx files
+│       ├── seo/batch*-pages.ts        # Landing page copy
+│       ├── currency.ts, config/pricing.ts  # Geo pricing
+│       └── passport-api.ts            # Photo API client (server only)
+├── CLAUDE.md, DESIGN.md, DEPLOY.md, README.md
+└── next.config.ts, eslint.config.mjs, tsconfig.json
 ```

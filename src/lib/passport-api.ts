@@ -1,17 +1,21 @@
 /**
- * PixPassport API Client Helper
- * Official Endpoint: https://api.pixpassport.com/process
+ * Photo Processing API Client Helper
  *
  * Designed for server-side Next.js route handlers and server actions
  * to ensure the API key is never exposed to the client browser.
  */
 
-// .env.local uses PIXPASSPORT_*; PIX_PASSPORT_* is accepted for older deployments.
+// Supports ID_PHOTO_MAKER_* plus legacy PIXPASSPORT_* / PIX_PASSPORT_* env vars in production.
 const API_BASE_URL =
+  process.env.ID_PHOTO_MAKER_API_URL ||
   process.env.PIXPASSPORT_API_URL ||
   process.env.PIX_PASSPORT_API_URL ||
   "https://api.pixpassport.com";
-const API_KEY = process.env.PIXPASSPORT_API_KEY || process.env.PIX_PASSPORT_API_KEY || "";
+const API_KEY =
+  process.env.ID_PHOTO_MAKER_API_KEY ||
+  process.env.PIXPASSPORT_API_KEY ||
+  process.env.PIX_PASSPORT_API_KEY ||
+  "";
 
 export interface PassportMetrics {
   head_height_pct?: number;
@@ -40,7 +44,7 @@ export interface PassportProcessOptions {
 }
 
 /**
- * Creates headers for authenticated requests to https://api.pixpassport.com/process
+ * Creates headers for authenticated requests to https://api.id-photo-maker.com/process
  */
 export function getPassportApiHeaders(): HeadersInit {
   const headers: Record<string, string> = {
@@ -55,7 +59,7 @@ export function getPassportApiHeaders(): HeadersInit {
 }
 
 /**
- * Uploads an image to the PixPassport API (/process) for compliance formatting.
+ * Uploads an image to the id-photo-maker API (/process) for compliance formatting.
  *
  * @param fileBuffer The raw image Buffer or Blob
  * @param fileName Original file name
@@ -123,7 +127,7 @@ export async function processPassportPhoto(
     const message = err instanceof Error ? err.message : "Unknown error";
     return {
       status: "error",
-      error: `Failed to connect to PixPassport API: ${message}`,
+      error: `Failed to connect to photo processing API: ${message}`,
     };
   }
 }

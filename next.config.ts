@@ -19,17 +19,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    // Single-page site: every retired URL 301s to the homepage so existing
-    // links and rankings consolidate onto it.
-    const retired = [
+    // Redirect retired legacy URLs to their best matching active landing pages.
+    const toHome = [
       "/tool",
       "/tool/:slug*",
       "/how-to",
       "/how-to/:slug*",
-      "/passport-size-photo-maker",
-      "/passport-size-photo-online",
-      "/passport-photo-print-template-generator",
-      "/print-passport-photos-at-home",
       "/about-us",
       "/contact-us",
       "/privacy-policy",
@@ -42,20 +37,24 @@ const nextConfig: NextConfig = {
       "/uk-driving-licence-photo",
       "/driving-licence-photo",
       "/photo-railcard",
-      "/us-visa-photo",
-      "/us-visa-photo-tool",
       "/schengen-visa-photo",
-      "/indian-passport-photo",
-      "/indian-passport-photo-maker",
-      "/digital-passport-photo",
-      "/photo-size-35x45mm",
-      "/image-to-passport-size-converter",
       "/passport-photo-at-home",
-      "/passport-photo-tool",
-      "/online-id-photo-maker",
       "/order-passport-photos-online",
     ];
-    return retired.map((source) => ({ source, destination: "/", permanent: true }));
+    return [
+      ...toHome.map((source) => ({ source, destination: "/", permanent: true })),
+      { source: "/us-visa-photo", destination: "/us/visa-photo-checker", permanent: true },
+      { source: "/us-visa-photo-tool", destination: "/us/visa-photo-checker", permanent: true },
+      { source: "/passport-photo-print-template-generator", destination: "/passport-photo-template-4x6", permanent: true },
+      { source: "/print-passport-photos-at-home", destination: "/print-passport-photo-a4", permanent: true },
+      { source: "/photo-size-35x45mm", destination: "/35x45-photo-maker", permanent: true },
+      { source: "/indian-passport-photo", destination: "/india/passport-photo-maker", permanent: true },
+      { source: "/indian-passport-photo-maker", destination: "/india/passport-photo-maker", permanent: true },
+      { source: "/passport-size-photo-online", destination: "/passport-size-photo-maker", permanent: true },
+      { source: "/passport-photo-tool", destination: "/passport-size-photo-maker", permanent: true },
+      { source: "/online-id-photo-maker", destination: "/passport-size-photo-maker", permanent: true },
+      { source: "/image-to-passport-size-converter", destination: "/passport-size-photo-maker", permanent: true },
+    ];
   },
   async headers() {
     return [
@@ -94,7 +93,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/pixpassport.jpg",
+        source: "/id-photo-maker.jpg",
         headers: [
           {
             key: "Cache-Control",

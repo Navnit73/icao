@@ -15,7 +15,7 @@ import { createRazorpayOrder } from "@/lib/payments/razorpay";
 import { uploadOriginalPhotoToCloudinary } from "@/lib/storage/cloudinary";
 import { logActivity } from "@/lib/logging/activity-logger";
 
-const PAYMENT_SOURCE = "pixpassport.uk";
+const PAYMENT_SOURCE = "id-photo-maker.com";
 
 /**
  * Razorpay rejects unsupported currencies with a 400 BAD_REQUEST_ERROR naming the

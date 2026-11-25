@@ -34,7 +34,7 @@ export async function GET() {
  *
  * Body options:
  * - { "all": true } -> Submits all site URLs
- * - { "urls": ["https://pixpassport.uk/tool/uk-passport-photo"] } -> Submits specific URLs
+ * - { "urls": ["https://id-photo-maker.com/tool/uk-passport-photo"] } -> Submits specific URLs
  */
 export async function POST(req: NextRequest) {
   try {

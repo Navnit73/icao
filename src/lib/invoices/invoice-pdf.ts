@@ -1,6 +1,6 @@
 /**
  * Invoice PDF Generator using pdf-lib
- * Creates clean, lightweight, vector A4 Tax Invoice PDFs matching PixPassport compliance standards.
+ * Creates clean, lightweight, vector A4 Tax Invoice PDFs matching id-photo-maker compliance standards.
  */
 
 import fs from "fs";
@@ -88,7 +88,7 @@ export async function generateInvoicePdfBuffer(params: InvoicePdfParams): Promis
   // Left: Brand Logo & Details
   let logoEmbedded = false;
   try {
-    const logoPath = path.join(process.cwd(), "public", "pixpassport.jpg");
+    const logoPath = path.join(process.cwd(), "public", "id-photo-maker.jpg");
     if (fs.existsSync(logoPath)) {
       const logoBytes = fs.readFileSync(logoPath);
       const logoImage = await pdfDoc.embedJpg(logoBytes);
@@ -112,8 +112,8 @@ export async function generateInvoicePdfBuffer(params: InvoicePdfParams): Promis
       height: 34,
       color: primaryColor,
     });
-    page.drawText("P", {
-      x: margin + 10,
+    page.drawText("I", {
+      x: margin + 12,
       y: y - 24,
       size: 20,
       font: fontBold,
@@ -121,7 +121,7 @@ export async function generateInvoicePdfBuffer(params: InvoicePdfParams): Promis
     });
   }
 
-  page.drawText("PixPassport", {
+  page.drawText("ID Photo Maker", {
     x: margin + 44,
     y: y - 10,
     size: 18,
@@ -137,7 +137,7 @@ export async function generateInvoicePdfBuffer(params: InvoicePdfParams): Promis
     color: slate600,
   });
 
-  page.drawText(`support@pixpassport.com  |  ${PRICING.siteUrl.replace(/^https?:\/\//, "")}`, {
+  page.drawText(`support@id-photo-maker.com  |  ${PRICING.siteUrl.replace(/^https?:\/\//, "")}`, {
     x: margin + 44,
     y: y - 32,
     size: 8.5,
@@ -531,7 +531,7 @@ export async function generateInvoicePdfBuffer(params: InvoicePdfParams): Promis
   page.drawText(`- Status: Completed & Active`, { x: col3X, y: y - 54, size: 7.5, font: fontRegular, color: slate600 });
 
   // Compliance Footer Note
-  page.drawText("[OK] Digitally authenticated & verified by PixPassport Automated Billing Engine.", {
+  page.drawText("[OK] Digitally authenticated & verified by ID Photo Maker Automated Billing Engine.", {
     x: margin + 12,
     y: y - 68,
     size: 7.5,

@@ -1,15 +1,17 @@
 /**
  * IndexNow SEO Integration Service
  * Automatically notifies Bing, Yandex, Seznam, and other IndexNow-compliant search engines
- * whenever pages, tools, or articles are updated on PixPassport.
+ * whenever pages, tools, or articles are updated on id-photo-maker.
  */
+
+import { getSiteUrl } from "@/lib/site";
 
 export const INDEXNOW_KEY = "0c3dc5e8833b46beb209705aa05e5683";
 export const INDEXNOW_HOST = (() => {
   try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pixpassport.uk").host;
+    return new URL(getSiteUrl()).host;
   } catch {
-    return "pixpassport.uk";
+    return "id-photo-maker.com";
   }
 })();
 export const INDEXNOW_KEY_LOCATION = `https://${INDEXNOW_HOST}/${INDEXNOW_KEY}.txt`;
@@ -36,11 +38,26 @@ export interface IndexNowSubmissionResult {
 }
 
 /**
- * Get all public indexable URLs for PixPassport.
+ * Get all public indexable URLs for id-photo-maker.com.
  */
 export function getAllSiteUrls(): string[] {
-  // Single-page site: only the homepage is indexable.
-  return [`https://${INDEXNOW_HOST}`];
+  const paths = [
+    "",
+    "/passport-photo-checker",
+    "/uk/passport-photo-checker",
+    "/us/visa-photo-checker",
+    "/dv-lottery-photo-checker",
+    "/passport-photo-template-4x6",
+    "/print-passport-photo-a4",
+    "/35x45-photo-maker",
+    "/white-background-passport-photo",
+    "/india/passport-photo-maker",
+    "/digital-passport-photo",
+    "/passport-size-photo-maker",
+    "/us/passport-photo-checker",
+    "/us/passport-photo-size",
+  ];
+  return paths.map((p) => `https://${INDEXNOW_HOST}${p}`);
 }
 
 /**

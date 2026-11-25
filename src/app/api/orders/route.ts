@@ -40,9 +40,16 @@ function isAllowedImageUrl(raw: string): boolean {
     const url = new URL(raw);
     if (url.protocol !== "https:") return false;
     const allowed = new Set(["res.cloudinary.com"]);
-    const apiUrl = process.env.PIXPASSPORT_API_URL || process.env.PIX_PASSPORT_API_URL;
+    const apiUrl =
+      process.env.ID_PHOTO_MAKER_API_URL ||
+      process.env.PIXPASSPORT_API_URL ||
+      process.env.PIX_PASSPORT_API_URL;
     if (apiUrl) allowed.add(new URL(apiUrl).host);
-    return allowed.has(url.host) || url.host.endsWith(".pixpassport.com");
+    return (
+      allowed.has(url.host) ||
+      url.host.endsWith(".id-photo-maker.com") ||
+      url.host.endsWith(".pixpassport.com")
+    );
   } catch {
     return false;
   }

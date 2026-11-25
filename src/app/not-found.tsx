@@ -7,11 +7,12 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Page Not Found (404)",
   description:
-    "The page you are looking for does not exist or has been moved. Create a compliant passport photo online with PixPassport.",
+    "The page you are looking for does not exist or has been moved. Create a compliant passport photo online with ID Photo Maker.",
   alternates: {
     canonical: undefined,
-    languages: undefined,
   },
+  // Override the layout's "index, follow" so the 404 sends one consistent signal.
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {

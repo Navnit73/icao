@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { headers } from "next/headers";
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowDown,
@@ -17,48 +17,45 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import JsonLd, { DEFAULT_SITE_URL } from "@/components/JsonLd";
+import JsonLd from "@/components/JsonLd";
 import Section, { AnswerBox, InfoTable } from "@/components/Section";
 import IcaoPhotoTool from "@/components/IcaoPhotoTool";
-import { resolveCurrencyFromHeaders } from "@/lib/currency";
 import { PRICING } from "@/lib/config/pricing";
-import { HERO_IMAGE, OG_IMAGE, OG_IMAGE_ALT } from "@/lib/site";
+import { HERO_IMAGE, SITE_URL } from "@/lib/site";
 
 /* ------------------------------------------------------------------ */
 /* Metadata                                                             */
 /* ------------------------------------------------------------------ */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL;
-
 /** Update whenever the content is re-checked against official sources. */
-const LAST_REVIEWED = { iso: "2026-11-24", label: "24 November 2026" };
+const LAST_REVIEWED = { iso: "2026-11-25", label: "25 November 2026" };
 
-/** Main keyword: "ICAO standard photograph". */
-const PAGE_TITLE = "ICAO Standard Photograph Online | Fix “Photo Not Valid” Error";
+/**
+ * Main keyword: "ICAO standard photograph". The generic "passport photo checker"
+ * query belongs to /passport-photo-checker, so this page does not target it.
+ */
+const PAGE_TITLE = "ICAO Standard Photograph Online — Fix “Photo Not Valid”";
 const PAGE_DESCRIPTION =
-  "Make an ICAO standard photograph online. Fix “photo is not valid as per ICAO standards” for Passport Seva and 50+ countries, with a free preview.";
+  "Check and convert any photo to ICAO Doc 9303 standards online. Fix “photo is not valid as per ICAO standards” for 50+ countries with a free instant preview.";
 
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/",
-    languages: { en: "/", "x-default": "/" },
   },
   openGraph: {
     type: "website",
-    siteName: "PixPassport",
+    siteName: "ID Photo Maker",
     locale: "en_GB",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: OG_IMAGE_ALT }],
   },
   twitter: {
     card: "summary_large_image",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
-    images: [OG_IMAGE],
   },
 };
 
@@ -190,7 +187,7 @@ const EXAMPLES = [
   {
     title: "Wall shadow and yellow tint removed",
     before: `${CLOUDINARY}/c_fill,g_face,w_420,h_540,q_auto,f_auto/v1786628280/before_uk_f24dre.jpg`,
-    after: `${CLOUDINARY}/c_fill,g_face,w_420,h_540,q_auto,f_auto/v1786627664/eu_pixpassport.com_ppfhlr.jpg`,
+    after: "/images/passport-photo-white-background-after.webp",
   },
   {
     title: "Tilted, off-centre head aligned",
@@ -342,10 +339,7 @@ const ctaSecondaryClass =
 /* Page                                                                 */
 /* ------------------------------------------------------------------ */
 
-export default async function Home() {
-  // Visitor's country only preselects the document format in the checker; prices appear on /preview.
-  const { country } = resolveCurrencyFromHeaders(await headers());
-
+export default function Home() {
   const stats = [
     { value: "50+", label: "countries and visa formats" },
     { value: "~1 min", label: "from upload to ICAO photo" },
@@ -448,7 +442,15 @@ export default async function Home() {
           className="scroll-mt-2 pt-8 sm:pt-10 lg:pt-12"
         >
           <div className="mx-auto max-w-3xl">
-            <IcaoPhotoTool initialCountryCode={country} />
+            {/* Static page: the tool looks up the visitor's country in the browser. */}
+            <IcaoPhotoTool detectVisitorCountry />
+            <p className="mt-4 text-center text-sm text-gray-600">
+              Only want to test a photo you already have? Use the free{" "}
+              <Link href="/passport-photo-checker" className="font-medium text-amber-700 underline-offset-4 hover:underline">
+                passport photo checker
+              </Link>
+              .
+            </p>
             <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-gray-500">
               <Clock className="size-3.5 shrink-0" aria-hidden="true" />
               Rules checked against official sources on{" "}
@@ -629,24 +631,27 @@ export default async function Home() {
           </div>
         </Section>
 
-        {/* INDIA */}
+        {/* INDIA (Summary linking to dedicated /india/passport-photo-maker spoke to prevent cannibalization) */}
         <Section
           id="india"
           eyebrow="India"
-          title="Indian passport photo size and guidelines"
-          subtitle="India passport photo size, dimensions and photo requirements for new passports and renewals."
+          title="Passport Seva 2.0 ICAO photo specifications"
+          subtitle="Key 630 × 810 px upload rules for Indian passports and renewals, linked to our dedicated Indian passport photo maker."
           className="bg-gray-50"
         >
           <AnswerBox>
-            The passport size photo dimensions in India for online upload are <strong>630 × 810 pixels, JPEG, up to 250 KB</strong>,
-            with a plain white background, no glasses, and the face filling <strong>80–85%</strong> of the photo
-            height. It must be taken in the last 6 months.
+            Online Indian passport uploads require a <strong>630 × 810 pixel JPEG up to 250 KB</strong>, plain white
+            background, no glasses, and the face filling <strong>80–85%</strong> of the photo height.{" "}
+            <Link href="/india/passport-photo-maker" className="font-semibold text-amber-800 underline underline-offset-4 hover:text-black">
+              Open the dedicated Indian passport photo maker
+            </Link>{" "}
+            with India preselected.
           </AnswerBox>
           <div className="mx-auto mt-10 grid max-w-5xl gap-4 lg:grid-cols-[1.2fr_1fr]">
-            <InfoTable caption="India passport picture requirements" head={["Item", "Requirement"]} rows={INDIA_SPECS} />
+            <InfoTable caption="Passport Seva 2.0 quick reference" head={["Item", "Requirement"]} rows={INDIA_SPECS} />
             <div className="flex flex-col gap-4">
               <div className="rounded-2xl bg-white p-5 ring-1 ring-gray-200 sm:p-7">
-                <h3 className="text-lg font-bold tracking-tight sm:text-xl">Indian passport renewal photo size and requirements</h3>
+                <h3 className="text-lg font-bold tracking-tight sm:text-xl">Renewals and re-issues</h3>
                 <p className="mt-2 text-sm leading-relaxed text-pretty text-gray-600 sm:text-base">
                   Renewal and re-issue use the same ICAO rules and the same photo size as a new passport. Use a new
                   photo; the one in your old passport will not be accepted.
@@ -700,7 +705,7 @@ export default async function Home() {
         >
           <div className="mx-auto max-w-5xl">
             <InfoTable
-              head={["Feature", "PixPassport", "Photo studio", "Free online checkers"]}
+              head={["Feature", "ID Photo Maker", "Photo studio", "Free online checkers"]}
               rows={COMPARISON}
               highlightCol={1}
             />
@@ -719,7 +724,7 @@ export default async function Home() {
               {
                 icon: ShieldCheck,
                 title: "Tested on real rejections",
-                body: "The PixPassport team built the tool from photos customers had rejected by passport portals, and checks the output against each country’s size, face-ratio and file limits.",
+                body: "The ID Photo Maker team built the tool from photos customers had rejected by passport portals, and checks the output against each country’s size, face-ratio and file limits.",
               },
               {
                 icon: Lock,
@@ -754,7 +759,7 @@ export default async function Home() {
               ))}
             </ul>
             <p className="mt-4 text-xs text-gray-500">
-              Written by the PixPassport editorial team · Last reviewed{" "}
+              Written by the ID Photo Maker editorial team · Last reviewed{" "}
               <time dateTime={LAST_REVIEWED.iso}>{LAST_REVIEWED.label}</time>
             </p>
           </div>
@@ -794,7 +799,7 @@ export default async function Home() {
               {
                 id: "terms",
                 title: "Terms",
-                body: "PixPassport is an independent photo service, not affiliated with ICAO, Passport Seva, the Ministry of External Affairs or any government. Final acceptance is always decided by the issuing authority. Upload only photos of yourself or people you are authorised to apply for.",
+                body: "ID Photo Maker is an independent photo service, not affiliated with ICAO, Passport Seva, the Ministry of External Affairs or any government. Final acceptance is always decided by the issuing authority. Upload only photos of yourself or people you are authorised to apply for.",
               },
             ].map((p) => (
               <div key={p.id} id={p.id} className="scroll-mt-28 rounded-2xl bg-white p-5 ring-1 ring-gray-200 sm:p-7">
@@ -813,6 +818,99 @@ export default async function Home() {
               </p>
             </div>
           </div>
+        </Section>
+
+        {/* SPECIALIZED CHECKERS & TOOLS (Internal Hub Links) */}
+        <Section
+          id="checkers"
+          eyebrow="Specialized tools"
+          title="Country photo checkers, makers and print sheets"
+          subtitle="Jump straight to a dedicated passport photo checker, size formatter, white-background editor, or free print template."
+        >
+          <ul className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                href: "/passport-photo-checker",
+                title: "Passport Photo Checker",
+                desc: "Free biometric check and preview for 50+ countries.",
+              },
+              {
+                href: "/passport-size-photo-maker",
+                title: "Passport Size Photo Maker",
+                desc: "Auto-crop and size passport photos for 50+ countries.",
+              },
+              {
+                href: "/digital-passport-photo",
+                title: "Digital Passport Photo",
+                desc: "Create exact pixel JPEGs for online applications.",
+              },
+              {
+                href: "/uk/passport-photo-checker",
+                title: "UK Passport Photo Checker",
+                desc: "Check 600×750 px and 35×45 mm HMPO requirements.",
+              },
+              {
+                href: "/us/passport-photo-checker",
+                title: "US Passport Photo Checker",
+                desc: "Validate 2×2 inch (600×600 px) U.S. passport photos.",
+              },
+              {
+                href: "/us/passport-photo-size",
+                title: "US Passport Photo Size",
+                desc: "Exact 2×2 inch measurements, pixels & instant resizer.",
+              },
+              {
+                href: "/us/visa-photo-checker",
+                title: "US Visa Photo Checker",
+                desc: "Verify 600×600 px DS-160 and USCIS visa photos.",
+              },
+              {
+                href: "/dv-lottery-photo-checker",
+                title: "DV Lottery Photo Checker",
+                desc: "Validate 600×600 px Green Card Lottery entries.",
+              },
+              {
+                href: "/india/passport-photo-maker",
+                title: "Indian Passport Photo Maker",
+                desc: "Format 630×810 px Passport Seva 2.0 photos.",
+              },
+              {
+                href: "/35x45-photo-maker",
+                title: "35×45 mm Photo Maker",
+                desc: "Resize and crop global 35×45 mm passport photos.",
+              },
+              {
+                href: "/white-background-passport-photo",
+                title: "White Background Photo",
+                desc: "Remove shadows and cluttered walls automatically.",
+              },
+              {
+                href: "/passport-photo-template-4x6",
+                title: "4×6 Print Template",
+                desc: "Build a free 300 DPI 4×6″ kiosk print sheet.",
+              },
+              {
+                href: "/print-passport-photo-a4",
+                title: "Print on A4 Paper",
+                desc: "Arrange up to 24 passport photos on an A4 sheet.",
+              },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="flex h-full flex-col justify-between rounded-2xl bg-gray-100 p-5 transition-colors hover:bg-amber-50 hover:ring-1 hover:ring-amber-400"
+                >
+                  <div>
+                    <h3 className="text-base font-bold text-black">{item.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{item.desc}</p>
+                  </div>
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
+                    Open tool <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Section>
 
         {/* FINAL CTA */}

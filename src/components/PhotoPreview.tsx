@@ -66,7 +66,7 @@ interface PaidInfo extends PaidOrder {
 const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const UPLOAD_HREF = "/#make-photo";
-const paidKey = (id: string) => `pixpassport_paid_${id}`;
+const paidKey = (id: string) => `id-photo-maker_paid_${id}`;
 
 /** Paid state is kept in this browser so a refresh keeps the download available. */
 function loadPaid(id: string): PaidInfo | null {
@@ -127,10 +127,10 @@ function loadStoredResult(id: string): StoredResult | null {
     try {
       const store = getStore();
       for (const key of ids) {
-        const raw = store.getItem(`pixpassport_${key}`);
+        const raw = store.getItem(`id-photo-maker_${key}`);
         if (raw) return JSON.parse(raw) as StoredResult;
       }
-      const latest = store.getItem("pixpassport_latest");
+      const latest = store.getItem("id-photo-maker_latest");
       if (latest) {
         const parsed = JSON.parse(latest) as StoredResult;
         if (ids.includes(parsed.result_id)) return parsed;
@@ -581,7 +581,7 @@ export default function PhotoPreview({ resultId, priceCountryName }: PhotoPrevie
                   <PrintTemplateGenerator
                     initialImageUrl={fullImageUrl}
                     initialPaperSize="4x6"
-                    initialPhotoStandard={dimensions.startsWith("600x600") ? "2x2" : "35x45"}
+                    initialPhotoStandard={dimensions.startsWith("600x600") ? "51x51" : "35x45"}
                     showInstructions={false}
                   />
                 </div>

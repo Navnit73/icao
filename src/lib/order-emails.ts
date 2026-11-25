@@ -2,8 +2,9 @@ import "server-only";
 import { escapeHtml } from "@/lib/mail";
 import { formatMoney } from "@/lib/currency";
 import type { OrderRecord } from "@/lib/orders";
+import { getSiteUrl } from "@/lib/site";
 
-const SITE_URL = () => process.env.NEXT_PUBLIC_SITE_URL || "https://id-photo-maker.com";
+const SITE_URL = () => getSiteUrl();
 const SITE_NAME = "ID Photo Maker";
 
 function layout(title: string, body: string): string {

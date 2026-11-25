@@ -1,5 +1,5 @@
 /**
- * Client-side helpers for sending a photo to the PixPassport processing proxy
+ * Client-side helpers for sending a photo to the id-photo-maker processing proxy
  * (POST /api/passport-photo). Used by the homepage IcaoPhotoTool.
  */
 
@@ -91,7 +91,7 @@ export function saveProcessedResult(
   return resultId;
 }
 
-const STORAGE_PREFIX = "pixpassport_";
+const STORAGE_PREFIX = "id-photo-maker_";
 const LATEST_KEY = `${STORAGE_PREFIX}latest`;
 /** Results kept per storage area; older ones are removed to stay under quota. */
 const MAX_STORED_RESULTS = 3;

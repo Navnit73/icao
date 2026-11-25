@@ -14,6 +14,7 @@ import {
   type CurrencyCode,
   type PlanType,
 } from "@/lib/currency";
+import { getSiteUrl } from "@/lib/site";
 
 export type { PlanType };
 
@@ -44,12 +45,12 @@ export const PRICING = {
   productDescription:
     "AI-processed, government-compliant biometric passport photo with background removal, auto-crop, and print-ready 6×4″ sheet.",
   /** Business display name */
-  businessName: "PixPassport",
+  businessName: "ID Photo Maker",
   /** Support email */
   supportEmail:
-    process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@pixpassport.com",
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@id-photo-maker.com",
   /** Website URL */
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://pixpassport.uk",
+  siteUrl: getSiteUrl(),
 } as const;
 
 export type PlanPricing = ReturnType<typeof getPlanPricing>;

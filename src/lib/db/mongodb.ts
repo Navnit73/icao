@@ -43,7 +43,7 @@ export function getClientPromise(): Promise<MongoClient> {
   return g._mongoClientPromise;
 }
 
-const DB_NAME = process.env.MONGODB_DB_NAME || "pixpassport";
+const DB_NAME = process.env.MONGODB_DB_NAME || process.env.MONGODB_DB || "id-photo-maker";
 
 /**
  * Returns a connected Db instance.

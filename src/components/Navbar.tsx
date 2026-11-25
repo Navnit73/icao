@@ -81,8 +81,8 @@ export default function Navbar({
       >
         <div className="flex h-14 items-center justify-between gap-2 pr-2 pl-3 sm:h-16 sm:pr-3 sm:pl-5">
           <Link href="/" className="flex min-w-0 items-center gap-2.5 font-semibold tracking-tight" onClick={() => setOpen(false)}>
-            <Image src="/pixpassport.jpg" alt="PixPassport logo" width={30} height={30} className="rounded-lg" priority />
-            <span className="truncate">PixPassport</span>
+            <Image src="/id-photo-maker.jpg" alt="ID Photo Maker logo" width={30} height={30} className="rounded-lg" priority />
+            <span className="truncate">ID Photo Maker</span>
           </Link>
 
           <nav aria-label="Main" className="flex shrink-0 items-center gap-1.5 text-sm md:gap-1">

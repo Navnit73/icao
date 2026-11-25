@@ -138,7 +138,7 @@ export function expertEditNotificationEmail(
     </div>
 
     <div style="font-size:11px;color:#94a3b8;text-align:center;">
-      PixPassport Expert Order Dispatch Service &bull; Internal Notification
+      ID Photo Maker Expert Order Dispatch Service &bull; Internal Notification
     </div>
   `;
 

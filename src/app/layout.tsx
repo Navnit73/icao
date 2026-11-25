@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { OG_IMAGE, OG_IMAGE_ALT } from "@/lib/site";
+import { SITE_NAME, getSiteUrl } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,28 +16,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const getMetadataBase = (): URL => {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (envUrl) {
-    try {
-      const formatted =
-        envUrl.startsWith("http://") || envUrl.startsWith("https://")
-          ? envUrl
-          : `https://${envUrl}`;
-      return new URL(formatted);
-    } catch {
-      // Fall back to default if invalid URL
-    }
-  }
-  return new URL("https://pixpassport.uk");
-};
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL &&
-  (process.env.NEXT_PUBLIC_SITE_URL.startsWith("http://") ||
-    process.env.NEXT_PUBLIC_SITE_URL.startsWith("https://"))
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://pixpassport.uk";
+const SITE_URL = getSiteUrl();
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -48,41 +27,33 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: getMetadataBase(),
+  metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "ICAO Standard Photograph Online | PixPassport",
-    template: "%s | PixPassport",
+    default: "ICAO Standard Photograph Online | ID Photo Maker",
+    template: "%s | ID Photo Maker",
   },
 
   description:
     "Make an ICAO standard photograph online. Fix “photo is not valid as per ICAO standards” for Passport Seva and 50+ countries, with a free preview.",
 
-  authors: [{ name: "PixPassport", url: SITE_URL }],
+  authors: [{ name: "ID Photo Maker", url: SITE_URL }],
 
-  creator: "PixPassport",
-  publisher: "PixPassport",
+  creator: "ID Photo Maker",
+  publisher: "ID Photo Maker",
 
   // Canonical is set per page. A canonical here would be inherited by every
   // route that does not define its own and point it at the homepage.
 
   openGraph: {
-    siteName: "PixPassport",
+    siteName: SITE_NAME,
     locale: "en_GB",
     type: "website",
-    images: [
-      {
-        url: OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: OG_IMAGE_ALT,
-      },
-    ],
+    // Images come from opengraph-image.tsx files (one per page).
   },
 
   twitter: {
     card: "summary_large_image",
-    images: [OG_IMAGE],
   },
 
   robots: {
@@ -107,7 +78,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="pixpassport"
+      data-theme="id-photo-maker"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
